@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">ExemploBluetooth</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="label_tipo_dispositivo">Tipo:</string>
+    <string name="label_nome_dispositivo">Nome:</string>
+    <string name="label_mac_dispositivo">MAC Address:</string>
+
+
+    <string name="action_settings">Settings</string>
+</resources>
