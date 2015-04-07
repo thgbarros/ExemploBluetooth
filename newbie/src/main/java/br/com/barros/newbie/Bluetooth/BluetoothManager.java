@@ -3,6 +3,7 @@ package br.com.barros.newbie.Bluetooth;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.IntentFilter;
 
@@ -12,15 +13,16 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import br.com.barros.newbie.Bluetooth.Exceptions.BluetoothException;
-import br.com.barros.newbie.Observers.BluetoothObservable;
-import br.com.barros.newbie.Observers.BluetoothObserver;
+import br.com.barros.newbie.Bluetooth.Exceptions.BluetoothStatus;
+import br.com.barros.newbie.Observers.Observable;
+import br.com.barros.newbie.Observers.Observer;
 
 /**
  * Created by thiagobarros on 05/04/15.
  */
-public class BluetoothManager implements BluetoothObservable, BluetoothObserver {
+public class BluetoothManager implements Observable, Observer {
 
-    private Set<BluetoothObserver> observers = new HashSet<>();
+    private Set<Observer> observers = new HashSet<>();
     private Set<BluetoothDevice> devices;
 
     private BluetoothAdapter defaultAdapter;
@@ -32,7 +34,12 @@ public class BluetoothManager implements BluetoothObservable, BluetoothObserver 
     private static final int TEMPO_DE_DESCOBERTA = 30;
     private static final int VISIVEL = 1;
 
+    private BluetoothStatus bluetoothStatus = BluetoothStatus.NONE;
+
     private static final UUID uuid = UUID.fromString("0bed0288-dfbf-4557-9699-0929daa7c2eb");
+
+    private BluetoothAcceptSocketThread acceptSocketThread = null;
+    private BluetoothConnectThread bluetoothConnectThread = null;
 
     public BluetoothManager(Activity activity) throws BluetoothException {
         defaultAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -66,31 +73,49 @@ public class BluetoothManager implements BluetoothObservable, BluetoothObserver 
         activity.startActivityForResult(discoverableIntent, VISIVEL);
 
         defaultAdapter.startDiscovery();
+        bluetoothStatus = BluetoothStatus.DISCOVERING;
+    }
+
+    public void acceptConnection(){
+        acceptSocketThread = new BluetoothAcceptSocketThread(defaultAdapter, uuid, this);
+        acceptSocketThread.start();
     }
 
     public void connect(BluetoothDevice device){
-
+        bluetoothConnectThread = new BluetoothConnectThread(defaultAdapter, device, uuid, this);
+        bluetoothConnectThread.start();
     }
 
+
+
     @Override
-    public void attach(BluetoothObserver observer) {
+    public void attach(Observer observer) {
         observers.add(observer);
     }
 
     @Override
-    public void deatach(BluetoothObserver observer) {
+    public void deatach(Observer observer) {
         observers.remove(observer);
     }
 
     @Override
     public void notifyObserver() {
-        for (BluetoothObserver observer: observers)
+        for (Observer observer: observers) {
             observer.update(devices);
+            observer.update(bluetoothStatus);
+        }
     }
 
     @Override
-    public void update(Set<BluetoothDevice> devices) {
-        this.devices = devices;
-        notifyObserver();
+    public void update(Object object) {
+        if (object instanceof  Set) {
+            this.devices = (Set<BluetoothDevice>) object;
+            notifyObserver();
+        }
+
+        if (object instanceof BluetoothStatus) {
+            bluetoothStatus = (BluetoothStatus) object;
+            notifyObserver();
+        }
     }
 }

@@ -8,14 +8,13 @@ import android.content.Intent;
 
 import java.util.*;
 
-import br.com.barros.newbie.Observers.BluetoothObservable;
-import br.com.barros.newbie.Observers.BluetoothObserver;
+import br.com.barros.newbie.Observers.Observer;
 
 /**
  * Created by thiagobarros on 06/04/15.
  */
-public class BluetoothReceiver extends BroadcastReceiver implements BluetoothObservable {
-    private Set<BluetoothObserver> observers;
+public class BluetoothReceiver extends BroadcastReceiver implements br.com.barros.newbie.Observers.Observable {
+    private Set<Observer> observers;
     private Set<BluetoothDevice> devices;
 
     public BluetoothReceiver(){
@@ -23,12 +22,12 @@ public class BluetoothReceiver extends BroadcastReceiver implements BluetoothObs
         devices = new HashSet<>();
     }
 
-    public BluetoothReceiver(BluetoothObserver observer){
+    public BluetoothReceiver(Observer observer){
         this();
         observers.add(observer);
     }
 
-    public BluetoothReceiver(Set<BluetoothObserver> observers){
+    public BluetoothReceiver(Set<Observer> observers){
         this();
         this.observers = observers;
     }
@@ -44,18 +43,18 @@ public class BluetoothReceiver extends BroadcastReceiver implements BluetoothObs
     }
 
     @Override
-    public void attach(BluetoothObserver observer) {
+    public void attach(Observer observer) {
         observers.add(observer);
     }
 
     @Override
-    public void deatach(BluetoothObserver observer) {
+    public void deatach(Observer observer) {
         observers.remove(observer);
     }
 
     @Override
     public void notifyObserver() {
-        for (BluetoothObserver observer: observers)
+        for (br.com.barros.newbie.Observers.Observer observer: observers)
             observer.update(devices);
     }
 }

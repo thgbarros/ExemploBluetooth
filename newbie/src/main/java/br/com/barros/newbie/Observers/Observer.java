@@ -7,7 +7,7 @@ import java.util.Set;
 /**
  * Created by thiagobarros on 06/04/15.
  */
-public interface BluetoothObserver {
+public interface Observer {
 
-    void update(Set<BluetoothDevice> devices);
+    void update(Object devices);
 }
